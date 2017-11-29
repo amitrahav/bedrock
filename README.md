@@ -68,11 +68,11 @@ See a complete working example in the [roots-example-project.com repo](https://g
 
 ## Deploys
 
-### defining CodePipeline:
+### defining CodePipeline
 
 * selecting codeCommit as a source (or any other source supported and available).
-* running codeBuild with buildspec.yml - IMPORTANT! configure buildspec to run on a php-fpm image with composer install on it.
-* configure ElasticBeanstalk to use multi containers docker environment.
+* running codeBuild with buildspec.yml - IMPORTANT! configure codeBuild to run on a php-fpm image with composer install on it.
+* configure ElasticBeanstalk to use multi containers docker environment - IMPORTANT! change Dockerrunaws.json file with the right docker image details, should look something like this: 123456789101.dkr.ecr.eu-wast-1.amazonaws.com/php-fpm:latest
 * push code to codeCommit to start deployment process.
 
 ### How does it works?
