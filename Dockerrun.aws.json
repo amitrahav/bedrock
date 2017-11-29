@@ -1,0 +1,64 @@
+{
+    "AWSEBDockerrunVersion": 2,
+    "volumes": [{
+            "name": "php-app-vol",
+            "host": {
+                "sourcePath": "/var/app/current/site/"
+            }
+        },
+        {
+            "name": "nginx-proxy-conf",
+            "host": {
+                "sourcePath": "/var/app/current/config/nginx"
+            }
+        }
+    ],
+    "containerDefinitions": [{
+            "name": "php-app",
+            "image": "<ACCOUNT-ID>.dkr.ecr.<AWS-REGION>.amazonaws.com/<PHP-FPM-IMAGE-NAME>:<PHP-FPM-IMAGE-TAG>",
+            "environment": [{
+                "name": "Container",
+                "value": "PHP"
+            }],
+            "essential": true,
+            "memory": 128,
+            "mountPoints": [{
+                    "sourceVolume": "php-app-vol",
+                    "containerPath": "/var/www/html"
+                },
+                {
+                    "sourceVolume": "awseb-logs-php-app",
+                    "containerPath": "/usr/local/var/log"
+                }
+            ]
+        },
+        {
+            "name": "nginx-proxy",
+            "image": "nginx",
+            "essential": true,
+            "memory": 128,
+            "portMappings": [{
+                "hostPort": 80,
+                "containerPort": 80
+            }],
+            "links": [
+                "php-app"
+            ],
+            "mountPoints": [{
+                    "sourceVolume": "php-app-vol",
+                    "containerPath": "/var/www/html",
+                    "readOnly": true
+                },
+                {
+                    "sourceVolume": "nginx-proxy-conf",
+                    "containerPath": "/etc/nginx/conf.d",
+                    "readOnly": true
+                },
+                {
+                    "sourceVolume": "awseb-logs-nginx-proxy",
+                    "containerPath": "/var/log/nginx"
+                }
+            ]
+        }
+    ]
+}

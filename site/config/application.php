@@ -17,7 +17,7 @@ Env::init();
 $dotenv = new Dotenv\Dotenv($root_dir);
 if (file_exists($root_dir . '/.env')) {
     $dotenv->load();
-    $dotenv->required(['DB_NAME', 'DB_USER', 'DB_PASSWORD', 'WP_HOME', 'WP_SITEURL']);
+    $dotenv->required(['RDS_DB_NAME', 'RDS_USERNAME', 'RDS_PASSWORD', 'WP_HOME', 'WP_SITEURL']);
 }
 
 /**
@@ -48,10 +48,10 @@ define('WP_CONTENT_URL', WP_HOME . CONTENT_DIR);
 /**
  * DB settings
  */
-define('DB_NAME', env('DB_NAME'));
-define('DB_USER', env('DB_USER'));
-define('DB_PASSWORD', env('DB_PASSWORD'));
-define('DB_HOST', env('DB_HOST') ?: 'localhost');
+define('DB_NAME', env('RDS_DB_NAME'));
+define('DB_USER', env('RDS_USERNAME'));
+define('DB_PASSWORD', env('RDS_PASSWORD'));
+define('DB_HOST', env('RDS_HOSTNAME') ?: 'localhost');
 define('DB_CHARSET', 'utf8mb4');
 define('DB_COLLATE', '');
 $table_prefix = env('DB_PREFIX') ?: 'wp_';

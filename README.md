@@ -1,4 +1,4 @@
-# [Bedrock](https://roots.io/bedrock/)
+# [Bedrock](https://roots.io/bedrock/) on aws ElastickBeanstalk multi containers Docker
 [![Packagist](https://img.shields.io/packagist/v/roots/bedrock.svg?style=flat-square)](https://packagist.org/packages/roots/bedrock)
 [![Build Status](https://img.shields.io/travis/roots/bedrock.svg?style=flat-square)](https://travis-ci.org/roots/bedrock)
 
@@ -8,25 +8,29 @@ Much of the philosophy behind Bedrock is inspired by the [Twelve-Factor App](htt
 
 ## Features
 
-* Better folder structure
+* Better folder structure (adding site/ folder to separate php application from deployment configurations)
 * Dependency management with [Composer](http://getcomposer.org)
 * Easy WordPress configuration with environment specific files
 * Environment variables with [Dotenv](https://github.com/vlucas/phpdotenv)
 * Autoloader for mu-plugins (use regular plugins as mu-plugins)
 * Enhanced security (separated web root and secure passwords with [wp-password-bcrypt](https://github.com/roots/wp-password-bcrypt))
 
-Use [Trellis](https://github.com/roots/trellis) for additional features:
-
-* Easy development environments with [Vagrant](http://www.vagrantup.com/)
-* Easy server provisioning with [Ansible](http://www.ansible.com/) (Ubuntu 16.04, PHP 7.1, MariaDB)
-* One-command deploys
 
 See a complete working example in the [roots-example-project.com repo](https://github.com/roots/roots-example-project.com).
 
-## Requirements
+## Software Requirements
 
 * PHP >= 5.6
 * Composer - [Install](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx)
+
+## Deployment Requirements
+
+* Aws account
+* Configured pipeline with:
+  * CodeCommit.
+  * CodeBuild on a docker environment can run composer.
+  * Elastic Container Service with good php-fpm image - to run composer and php-fpm on.
+  * Elastic Beanstalk on a multi docker environment.
 
 ## Installation
 
@@ -34,11 +38,12 @@ See a complete working example in the [roots-example-project.com repo](https://g
 
   `composer create-project roots/bedrock your-project-folder-name`
 
-2. Update environment variables in `.env`  file:
-  * `DB_NAME` - Database name
-  * `DB_USER` - Database user
-  * `DB_PASSWORD` - Database password
-  * `DB_HOST` - Database host
+2. Update environment variables in `.env`  file - mostly for local development:
+
+  * `RDS_DB_NAME` - Database name
+  * `RDS_USERNAME` - Database user
+  * `RDS_PASSWORD` - Database password
+  * `RDS_HOSTNAME` - Database host
   * `WP_ENV` - Set to environment (`development`, `staging`, `production`)
   * `WP_HOME` - Full URL to WordPress home (http://example.com)
   * `WP_SITEURL` - Full URL to WordPress including subdirectory (http://example.com/wp)
@@ -52,6 +57,9 @@ See a complete working example in the [roots-example-project.com repo](https://g
 
   Or, you can cut and paste from the [Roots WordPress Salt Generator][roots-wp-salt].
 
+  On ElasticBeanstalk multi containers environment, env vars are transferd throgh RDS data tier and custome env vars you can insert on ebstalk->environment->config->softwer configurations.
+  so on this version of bedrock - the env vars are ElasticBeanstalk multi containers Ready
+
 3. Add theme(s) in `web/app/themes` as you would for a normal WordPress site.
 
 4. Set your site vhost document root to `/path/to/site/web/` (`/path/to/site/current/web/` if using deploys)
@@ -60,18 +68,29 @@ See a complete working example in the [roots-example-project.com repo](https://g
 
 ## Deploys
 
-There are two methods to deploy Bedrock sites out of the box:
+### defining CodePipeline:
 
-* [Trellis](https://github.com/roots/trellis)
-* [bedrock-capistrano](https://github.com/roots/bedrock-capistrano)
+* selecting codeCommit as a source (or any other source supported and available).
+* running codeBuild with buildspec.yml - IMPORTANT! configure buildspec to run on a php-fpm image with composer install on it.
+* configure ElasticBeanstalk to use multi containers docker environment.
+* push code to codeCommit to start deployment process.
 
-Any other deployment method can be used as well with one requirement:
+### How does it works?
 
-`composer install` must be run as part of the deploy process.
+1. codeBuild install all composer dependencies and create artifact that include all files necessary to run the software.
+2. ElasticBeanstalk deploys all those files into a host.
+3. php-fpm docker copy all site files and run php-fpm.
+4. nginx docker copy all site and config files and run nginx so it can serve all existing files.
+
+### Static files
+[amazon web services wp plugin](https://wordpress.org/plugins/amazon-web-services/) is required by default by composer.json, it's critical to configure it.
+it's recommended to serve files with aws cloudFront, but also possible with simple aws S3 with hosting permission.
 
 ## Documentation
 
 Bedrock documentation is available at [https://roots.io/bedrock/docs/](https://roots.io/bedrock/docs/).
+
+BeanStalk multi containers docker documentation is available at [http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker_ecs.html](http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker_ecs.html).
 
 ## Contributing
 
