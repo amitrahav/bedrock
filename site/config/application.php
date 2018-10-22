@@ -52,9 +52,9 @@ Config::define('WP_CONTENT_URL', Config::get('WP_HOME') . Config::get('CONTENT_D
 /**
  * DB settings
  */
-Config::define('DB_NAME', env('DB_NAME'));
-Config::define('DB_USER', env('DB_USER'));
-Config::define('DB_PASSWORD', env('DB_PASSWORD'));
+Config::define('DB_NAME', env('RDS_DB_NAME'));
+Config::define('DB_USER', env('RDS_USERNAME'));
+Config::define('DB_PASSWORD', env('RDS_PASSWORD'));
 Config::define('DB_HOST', env('DB_HOST') ?: 'localhost');
 Config::define('DB_CHARSET', 'utf8mb4');
 Config::define('DB_COLLATE', '');
